@@ -8,8 +8,11 @@ from .models import Category, Item
 def items(request):
     query = request.GET.get('query', '')
     category_id = request.GET.get('category', 0)
+    price = request.GET.get('price', 0)
     categories = Category.objects.all()
     items = Item.objects.filter(is_sold=False)
+
+    # items = Item.objects.filter(is_sold=False).order_by('-created_at')
 
     if category_id:
         items = items.filter(category_id=category_id)
@@ -17,11 +20,15 @@ def items(request):
     if query:
         items = items.filter(Q(name__icontains=query) | Q(description__icontains=query))
 
+    if price:
+        items = items.filter(price__lte=float(price))
+
     return render(request, 'item/items.html', {
         'items': items,
         'query': query,
         'categories': categories,
-        'category_id': int(category_id)
+        'category_id': int(category_id),
+        'price': price    
     })
 
 def detail(request, pk):
